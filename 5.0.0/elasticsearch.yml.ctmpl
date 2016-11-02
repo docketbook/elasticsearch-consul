@@ -1,8 +1,9 @@
 path:
   logs: /var/log/elasticsearch
   data: /var/data/elasticsearch
-{{with $key := env "CONSUL_ENVIRONMENT" | printf "%s/elasticsearch"}}
-{{with $config := key $key | parseJSON}}
+{{$KvKey := env "CONSUL_KVKEY"}}
+{{$ServiceName := env "CONSUL_SERVICE"}}
+{{$config := key $KvKey | parseJSON}}
 {{if $config.minimum_master_nodes}}
 discovery.zen.minimum_master_nodes: {{$config.minimum_master_nodes}}{{end}}
 {{if $config.clusterName}}
@@ -10,13 +11,10 @@ cluster.name: {{$config.clusterName}}{{end}}
 {{if $config.memory_lock}}
 bootstrap.memory_lock: true
 {{end}}
-{{end}}
-{{end}}
 node.name: ${HOSTNAME}
 network.host: 0.0.0.0
-{{$serviceName := env "CONSUL_ENVIRONMENT" | printf "%s.elasticsearch"}}
-{{$services := service $serviceName}}
+{{$services := service $ServiceName}}
 {{$lenServices := len $services}} {{ if gt $lenServices 0}}
 discovery.zen.ping.unicast.hosts:
-{{range service $serviceName}} - {{.Address}}
+{{range service $ServiceName}} - {{.Address}}
 {{end}}{{end}}

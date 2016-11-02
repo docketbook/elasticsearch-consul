@@ -6,6 +6,13 @@ healthCheck() {
 }
 
 preStart() {
+    if [ -z "$CONSUL_ENVIRONMENT" ]; then
+            export CONSUL_KVKEY="elasticsearch";
+            export CONSUL_SERVICE="elasticsearch";
+    else
+            export CONSUL_KVKEY="$CONSUL_ENVIRONMENT/elasticsearch"
+            export CONSUL_SERVICE="$CONSUL_ENVIRONMENT.elasticsearch"
+    fi
 	consul-template \
         -once \
         -dedup \
